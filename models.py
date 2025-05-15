@@ -16,7 +16,7 @@ class Report(ORMBaseModel):
 class ReportCreate(BaseModel):
     report_category_id: int
     description: str
-    time_of_submission: datetime=datetime.now()
+    time_of_submission: datetime
     status_category_id: int
     report_location: str  # format WKT, np. "POINT(123 456)"
 

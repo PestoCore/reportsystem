@@ -31,7 +31,7 @@ def create_report(report_create: ReportCreate, db_session: Session = Depends(get
     new_report = Report(
         report_category_id=report_create.report_category_id,
         description=report_create.description,
-        time_of_submission=report_create.time_of_submission,
+        time_of_submission=datetime.now(),
         status_category_id=report_create.status_category_id,
         report_location=f"SRID=2180;{report_create.report_location}"
     )
