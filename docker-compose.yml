@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    restart: always
+    environment:
+      POSTGRES_USER: kitek
+      POSTGRES_PASSWORD: kit
+      POSTGRES_DB: report_system
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://kitek:kit@db:5432/report_system
+
+volumes:
+  postgres_data:
