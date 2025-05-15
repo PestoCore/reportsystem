@@ -9,9 +9,9 @@ from db_config import ORMBaseModel, db_engine, get_db_session
 from encoders import to_dict
 from datetime import datetime
 
-# niestety
-import time
-time.sleep(15)
+# if app tried to connect to db too early
+# import time
+# time.sleep(15)
 
 ORMBaseModel.metadata.create_all(bind=db_engine)
 app = FastAPI()
