@@ -9,6 +9,7 @@ from db_config import ORMBaseModel, db_engine, get_db_session
 from encoders import to_dict
 from datetime import datetime
 
+# niestety
 import time
 time.sleep(15)
 
@@ -53,7 +54,7 @@ def create_report(report_create: ReportCreate, db_session: Session = Depends(get
 
 @app.get("/")
 def test():
-    return {"msg": "Hellow world"}
+    return {"msg": "Jeśli to widać, działa :3"}
 
 @app.get("/report")
 def get_all_reports(db_session: Session = Depends(get_db_session)):
