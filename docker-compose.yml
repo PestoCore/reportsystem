@@ -21,7 +21,6 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql://kitek:kit@db:5432/report_system
-    restart: always
 
 volumes:
   postgres_data:
