@@ -9,12 +9,15 @@ from db_config import ORMBaseModel, db_engine, get_db_session
 from encoders import to_dict
 from datetime import datetime
 
+import time
+time.sleep(15)
+
 ORMBaseModel.metadata.create_all(bind=db_engine)
 app = FastAPI()
 
 # POST
 
-@app.post("/report", status_code="201")
+@app.post("/report", status_code=201)
 def create_report(report_create: ReportCreate, db_session: Session = Depends(get_db_session)):
     try:
         position_geom = wkt.loads(report_create.report_location)
