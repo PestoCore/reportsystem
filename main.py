@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
 from shapely import wkb, wkt
 from fastapi.encoders import jsonable_encoder
+from fastapi.websockets import WebSocketDisconnect
 from models import Report, ReportCreate, StatusUpdate
 from db_config import ORMBaseModel, db_engine, get_db_session
 from encoders import to_dict
