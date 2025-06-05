@@ -1,6 +1,6 @@
 from typing import Union
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
 from shapely import wkb, wkt
 from fastapi.encoders import jsonable_encoder
@@ -8,13 +8,27 @@ from models import Report, ReportCreate, StatusUpdate
 from db_config import ORMBaseModel, db_engine, get_db_session
 from encoders import to_dict
 from datetime import datetime
+import json
 
-# if app tried to connect to db too early
-# import time
-# time.sleep(15)
+# niestety
+import time
+time.sleep(15)
 
 ORMBaseModel.metadata.create_all(bind=db_engine)
 app = FastAPI()
+
+# websockety
+@app.websocket("/ws/status_category_id")
+async def positions(websocket: WebSocket):
+    await websocket.accept()
+    active_connections.append(websocket)
+    try:
+        while True:
+            await websocket.receive_text()  # Utrzymanie połączenia
+    except WebSocketDisconnect:
+        active_connections.remove(websocket)
+
+active_connections: list[WebSocket] = []
 
 # POST
 
@@ -121,7 +135,7 @@ def get_report_location(report_id: int, db_session: Session = Depends(get_db_ses
 # PUT
 
 @app.put("/report/{report_id}/status_category_id")
-def update_status(report_id: int, status_update: StatusUpdate, db_session: Session = Depends(get_db_session)):
+async def update_status(report_id: int, status_update: StatusUpdate, db_session: Session = Depends(get_db_session)):
     report = db_session.query(Report).filter(Report.id == report_id).first()
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
@@ -130,6 +144,20 @@ def update_status(report_id: int, status_update: StatusUpdate, db_session: Sessi
     report.status_category_id = status_update.status_category_id
     db_session.commit()
     db_session.refresh(report)
+    position_geom = wkb.loads(bytes(report.report_location.data))
+    message = json.dumps({
+        "id": report.id,
+        "report_category_id": report.report_category_id,
+        "description": report.description,
+        "position": {
+            "x": position_geom.x,
+            "y": position_geom.y
+        },
+        "time_of_submission": report.time_of_submission.isoformat(),
+        "status_category_id": report.status_category_id
+    })
+    for connection in active_connections:
+        await connection.send_text(message)
     return jsonable_encoder({
         "message": "Status updated",
         "id": report.id,
