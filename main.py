@@ -146,11 +146,13 @@ async def update_status(report_id: int, status_update: StatusUpdate, db_session:
     db_session.commit()
     db_session.refresh(report)
     # position_geom = wkb.loads(bytes(report.report_location.data))
+    geom = wkb.loads(bytes(report.report_location.data))
+    location = {"lat": geom.y, "lon": geom.x}
     message = json.dumps({
         "id": report.id,
         "report_category_id": report.report_category_id,
         "description": report.description,
-        "report_location": report.report_location,
+        "report_location": location,
         "time_of_submission": report.time_of_submission.isoformat(),
         "status_category_id": report.status_category_id
     })
