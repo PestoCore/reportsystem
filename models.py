@@ -22,3 +22,6 @@ class ReportCreate(BaseModel):
 
 class StatusUpdate(BaseModel):
     status_category_id: int
+
+class LocationUpdate(BaseModel):
+    report_location: str

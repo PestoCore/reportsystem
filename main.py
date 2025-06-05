@@ -166,6 +166,41 @@ async def update_status(report_id: int, status_update: StatusUpdate, db_session:
         "status_category_id": status_update.status_category_id
     })
 
+@app.put("/report/{report_id}/report_location")
+async def update_status(report_id: int, location_update: LocationUpdate, db_session: Session = Depends(get_db_session)):
+    report = db_session.query(Report).filter(Report.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    try:
+        position_geom = wkt.loads(location_update.report_location)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid position WKT format")
+    report.report_location = location_update.report_location
+    db_session.commit()
+    db_session.refresh(report)
+    geom = wkb.loads(bytes(report.report_location.data))
+    message = json.dumps({
+        "id": report.id,
+        "report_category_id": report.report_category_id,
+        "description": report.description,
+        "report_location": {
+            "x": geom.x,
+            "y": geom.y
+        },
+        "time_of_submission": report.time_of_submission.isoformat(),
+        "status_category_id": report.status_category_id
+    })
+    for connection in active_connections:
+        await connection.send_text(message)
+    return jsonable_encoder({
+        "message": "Location updated",
+        "id": report.id,
+        "report_location": {
+            "x": geom.x,
+            "y": geom.y
+        }
+    })
+
 # DELETE
 
 @app.delete("/report/{report_id}")
